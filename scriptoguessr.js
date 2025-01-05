@@ -1,48 +1,10 @@
 const TRANSLATION = 'kjv';
-
-let BIBLE_MAP = null;
-const BOOKS = [
-   'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
-   'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
-   '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles',
-   'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms',
-   'Proverbs', 'Ecclesiastes', 'Song of Solomon', 'Isaiah',
-   'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel', 'Hosea',
-   'Joel', 'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum',
-   'Habakkuk', 'Zephaniah', 'Haggai', 'Zechariah', 'Malachi',
-   'Matthew', 'Mark', 'Luke', 'John', 'Acts',
-   'Romans', '1 Corinthians', '2 Corinthians', 'Galatians',
-   'Ephesians', 'Philippians', 'Colossians', '1 Thessalonians',
-   '2 Thessalonians', '1 Timothy', '2 Timothy', 'Titus',
-   'Philemon', 'Hebrews', 'James', '1 Peter', '2 Peter',
-   '1 John', '2 John', '3 John', 'Jude', 'Revelation'
-];
+const BOOKS = Object.keys(BIBLE_DATA);
 
 let currentVerse = null;
 let selectedPosition = null;
 let score = 0;
 
-async function buildBibleMap() {
-   const map = {};
-   console.log('Building Bible map...');
-   
-   // Start with a simpler map for testing
-   const commonVerses = {
-       Genesis: { chapters: { 1: 31, 2: 25, 3: 24 }},
-       Exodus: { chapters: { 1: 22, 2: 25, 3: 22 }},
-       Psalms: { chapters: { 1: 6, 2: 12, 23: 6 }},
-       Matthew: { chapters: { 1: 25, 2: 23, 3: 17 }},
-       John: { chapters: { 1: 51, 2: 25, 3: 36 }},
-       Revelation: { chapters: { 1: 20, 2: 29, 3: 22 }}
-   };
-   
-   // Build basic map for all books
-   for (const book of BOOKS) {
-       map[book] = { chapters: { 1: 30 }}; // Default assumption
-   }
-
-   return {...map, ...commonVerses};
-}
 
 async function displayVerse(book, chapter, verse, text, reveal = false) {
    const response = await Promise.all([
@@ -122,14 +84,45 @@ function initializeEventListeners() {
 }
 
 function calculateBiblePosition(percentage) {
-   const bookIndex = Math.floor((percentage / 100) * BOOKS.length);
-   const book = BOOKS[bookIndex] || BOOKS[0];
-   const chapters = Object.keys(BIBLE_MAP[book].chapters).length;
-   const chapter = Math.floor(Math.random() * chapters) + 1;
-   const maxVerse = BIBLE_MAP[book].chapters[chapter];
-   const verse = Math.floor(Math.random() * maxVerse) + 1;
-   
-   return { book, chapter, verse };
+   // Step 1: Find the Book
+   let cumulativePercentage = 0;
+   let selectedBook = BOOKS[0];
+   for (let book of BOOKS) {
+       cumulativePercentage += BIBLE_DATA[book].percentage;
+       if (percentage <= cumulativePercentage) {
+           selectedBook = book;
+           break;
+       }
+   }
+
+   // Calculate the local percentage within the selected book
+   const previousCumulative = cumulativePercentage - BIBLE_DATA[selectedBook].percentage;
+   const localPercentage = ((percentage - previousCumulative) / BIBLE_DATA[selectedBook].percentage) * 100;
+
+   // Step 2: Find the Chapter within the Book
+   const versesPerChapter = BIBLE_DATA[selectedBook].versesPerChapter;
+   const totalVerses = versesPerChapter.reduce((sum, verses) => sum + verses, 0);
+   const targetVerseNumber = Math.floor((localPercentage / 100) * totalVerses) + 1;
+
+   let cumulativeVerses = 0;
+   let selectedChapter = 1;
+   for (let i = 0; i < versesPerChapter.length; i++) {
+       cumulativeVerses += versesPerChapter[i];
+       if (targetVerseNumber <= cumulativeVerses) {
+           selectedChapter = i + 1;
+           break;
+       }
+   }
+
+   // Calculate the verse number within the selected chapter
+   const previousCumulativeVerses = cumulativeVerses - versesPerChapter[selectedChapter - 1];
+   const verseInChapter = targetVerseNumber - previousCumulativeVerses;
+
+   return {
+       book: selectedBook,
+       chapter: selectedChapter,
+       verse: verseInChapter
+   };
 }
 
 async function fetchRandomVerse() {
@@ -201,7 +194,6 @@ function calculateScore(guess, actual) {
 
 async function initGame() {
    console.log('Starting game initialization...');
-   BIBLE_MAP = await buildBibleMap();
    loadSVG();
    fetchRandomVerse();
 }
