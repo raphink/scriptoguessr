@@ -63,14 +63,20 @@ function initializeEventListeners() {
        console.log('SVG clicked');
        const rect = svg.getBoundingClientRect();
        const x = e.clientX - rect.left;
-       const percentage = (x / rect.width) * 100;
-       selectedPosition = calculateBiblePosition(percentage);
+       const svgWidth = svg.width.baseVal.value;
+       const scaleX = svgWidth / rect.width;
+       const svgX = x * scaleX;
 
-       const scaleX = svg.width.baseVal.value / rect.width;
+       if (svgX < BIND_WIDTH || svgX > svgWidth-BIND_WIDTH) {
+         console.error("Click out of bounds");
+         return;
+       }
+
+       const percentage = ((svgX - BIND_WIDTH) / (svgWidth-2*BIND_WIDTH)) * 100;
+       selectedPosition = calculateBiblePosition(percentage);
 
        const marker = svg.querySelector('#position-marker');
        if (marker) {
-           const svgX = x * scaleX;
            marker.setAttribute('x1', svgX);
            marker.setAttribute('x2', svgX);
            marker.setAttribute('stroke-width', POS_WIDTH);
@@ -302,10 +308,10 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
        return;
    }
    const rect = svg.getBoundingClientRect();
-   const scaleX = svg.width.baseVal.value / rect.width;
+   const svgWidth = svg.width.baseVal.value;
    const marker = svg.querySelector('#ans-position-marker');
    if (marker) {
-      const svgX = (ansPercent / 100) * rect.width * scaleX;
+      const svgX = (ansPercent / 100) * (svgWidth-2*BIND_WIDTH) + BIND_WIDTH;
       marker.setAttribute('x1', svgX);
       marker.setAttribute('x2', svgX);
       marker.setAttribute('stroke-width', POS_WIDTH);
