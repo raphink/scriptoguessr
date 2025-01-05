@@ -119,11 +119,9 @@ button:hover {
 }
 
 .reference-display {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
     background: white;
+    margin: 10px;
+    text-align: center;
     padding: 20px;
     font-size: 18px;
     font-weight: 500;
