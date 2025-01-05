@@ -434,15 +434,26 @@
             }
         }
 
-        document.getElementById('submit-guess').addEventListener('click', () => {
+        document.getElementById('submit-guess').addEventListener('click', async () => {
             if (!selectedPosition) {
                 alert('Please select a position first');
                 return;
             }
 
             const points = calculateScore(selectedPosition, currentVerse);
-            score = points; // Just show current round score
+            score = points;
+            
+            // Show score and actual reference
             document.querySelector('.score').textContent = `Score: ${points}/5000`;
+            const actualRef = `${currentVerse.book} ${currentVerse.chapter}:${currentVerse.verse}`;
+            const context = await getVerseContext(currentVerse.book, currentVerse.chapter, currentVerse.verse);
+            
+            document.getElementById('context-verses').style.filter = 'none';
+            document.getElementById('context-verses').innerHTML = 
+                `<div style="color: #666; margin-bottom: 20px">
+                    Your guess: ${selectedPosition.book} ${selectedPosition.chapter}:${selectedPosition.verse}<br>
+                    Actual reference: ${actualRef}
+                </div>${context}`;
             
             document.getElementById('submit-guess').style.display = 'none';
             document.getElementById('next-verse').style.display = 'inline-block';
