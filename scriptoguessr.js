@@ -294,6 +294,10 @@ function closeBible() {
    document.getElementById('reference-display').style.display = 'none';
 }
 
+function updateScore(points) {
+   document.querySelector('.score').textContent = `Score: ${points}`;
+}
+
 document.getElementById('submit-guess').addEventListener('click', async () => {
    if (!selectedPosition) {
        alert('Please select a position first');
@@ -307,8 +311,7 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
    score = points;
    totalScore += score;
    rounds += 1;
-   document.querySelector('.score').textContent = `Score: ${points}`;
-   //document.querySelector('.total-score').textContent = `Total: ${totalScore}/${5000*rounds}`;
+   updateScore(points);
 
    ansPercent = calculateVersePercentage(currentVerse);
 
@@ -343,11 +346,6 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
       $('#game-over p').html(`Total score: ${totalScore}`);
       $('#game-over').modal();
       resetGame();
-      document.getElementById('submit-guess').style.display = 'none';
-      document.getElementById('next-verse').style.display = 'none';
-      closeBible();
-      hidePositions();
-      fetchRandomVerse();
    }
 });
 
@@ -355,6 +353,13 @@ function resetGame() {
     score = 0;
     totalScore = 0;
     rounds = 0;
+
+    document.getElementById('submit-guess').style.display = 'none';
+    document.getElementById('next-verse').style.display = 'none';
+    updateScore(score);
+    closeBible();
+    hidePositions();
+    fetchRandomVerse();
 }
 
 document.getElementById('next-verse').addEventListener('click', () => {
