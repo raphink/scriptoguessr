@@ -1,3 +1,5 @@
+const TRANSLATION = 'kjv';
+
 let BIBLE_MAP = null;
 const BOOKS = [
    'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
@@ -44,8 +46,8 @@ async function buildBibleMap() {
 
 async function displayVerse(book, chapter, verse, text, reveal = false) {
    const response = await Promise.all([
-       fetch(`https://bible-api.com/${book}+${chapter}:${verse-1}`),
-       fetch(`https://bible-api.com/${book}+${chapter}:${verse+1}`)
+       fetch(`https://bible-api.com/${book}+${chapter}:${verse-1}?translation=${TRANSLATION}`),
+       fetch(`https://bible-api.com/${book}+${chapter}:${verse+1}?translation=${TRANSLATION}`)
    ]);
    
    const [prevData, nextData] = await Promise.all(response.map(r => r.json()));
@@ -133,25 +135,13 @@ function calculateBiblePosition(percentage) {
 async function fetchRandomVerse() {
    console.log('Fetching random verse...');
    try {
-       const randomBook = BOOKS[Math.floor(Math.random() * BOOKS.length)];
-       const chapters = Object.keys(BIBLE_MAP[randomBook].chapters).length;
-       const randomChapter = Math.floor(Math.random() * chapters) + 1;
-       const maxVerse = BIBLE_MAP[randomBook].chapters[randomChapter];
-       const randomVerse = Math.floor(Math.random() * maxVerse) + 1;
-       
        const response = await fetch(
-           `https://bible-api.com/${randomBook}+${randomChapter}:${randomVerse}`
+           `https://bible-api.com/data/${TRANSLATION}/random`
        );
        const data = await response.json();
 
-       currentVerse = {
-           text: data.text.trim(),
-           book: randomBook,
-           chapter: randomChapter,
-           verse: randomVerse
-       };
-
-       await displayVerse(randomBook, randomChapter, randomVerse, currentVerse.text);
+       currentVerse = data.random_verse;
+       await displayVerse(currentVerse.book, currentVerse.chapter, currentVerse.verse, currentVerse.text);
        
        closeBible();
        document.getElementById('submit-guess').style.display = 'none';
