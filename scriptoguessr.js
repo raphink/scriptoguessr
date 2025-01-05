@@ -153,7 +153,7 @@ async function fetchRandomVerse() {
 }
 
 function openBible() {
-   document.getElementById('navigation-panel').classList.add('opened');
+   //document.getElementById('navigation-panel').classList.add('opened');
    document.getElementById('reference-display').style.display = 'block';
 }
 
