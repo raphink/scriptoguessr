@@ -38,6 +38,7 @@ function loadSVG() {
            svg.id = 'bible-svg';
            console.log('SVG added to DOM with id:', svg.id);
            initializeEventListeners();
+           hidePositions();
        },
        error: function(error) {
            console.error('Error loading SVG:', error);
@@ -68,6 +69,7 @@ function initializeEventListeners() {
            const svgX = (percentage / 100) * 260 + 20;
            marker.setAttribute('x1', svgX);
            marker.setAttribute('x2', svgX);
+           marker.setAttribute('stroke-width', 2);
            console.log('Marker updated to position:', svgX);
        }
 
@@ -240,6 +242,7 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
       const svgX = (ansPercent / 100) * 260 + 20;
       marker.setAttribute('x1', svgX);
       marker.setAttribute('x2', svgX);
+      marker.setAttribute('stroke-width', 2);
       console.log('Marker updated to position:', svgX);
    }
    
@@ -255,8 +258,25 @@ document.getElementById('next-verse').addEventListener('click', () => {
    document.getElementById('submit-guess').style.display = 'none';
    document.getElementById('next-verse').style.display = 'none';
    closeBible();
+   hidePositions();
    fetchRandomVerse();
 });
+
+function hidePositions() {
+   const svg = document.querySelector('#bible-svg');
+   if (!svg) {
+       console.error('SVG element not found');
+       return;
+   }
+   const selMarker = svg.querySelector('#position-marker');
+   if (selMarker) {
+    selMarker.setAttribute('stroke-width', 0);
+   }
+   const ansMarker = svg.querySelector('#ans-position-marker');
+   if (ansMarker) {
+    ansMarker.setAttribute('stroke-width', 0);
+   }
+}
 
 /**
  * Converts a Bible reference to its sequential verse number.
