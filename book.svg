@@ -7,37 +7,33 @@
   
   <!-- Generate vertical lines for pages -->
   <g id="pages">
-    <!-- Start at x=20, end at x=280, step by 3 -->
+    <!-- Start at x=20, end at x=280, step by 0.5 -->
     <script type="text/javascript">
       <![CDATA[
-      for(let i = 20; i <= 280; i += 3) {
-        document.write(`<line x1="${i}" y1="20" x2="${i}" y2="780" stroke="#D3D3D3" stroke-width="1.5" />`);
+      for(let i = 20; i <= 280; i += 0.5) {
+        const opacity = Math.random() * 0.3 + 0.1;
+        document.write(`<line x1="${i}" y1="20" x2="${i}" y2="780" stroke="#D3D3D3" stroke-width="0.3" opacity="${opacity}" />`);
       }
       ]]>
     </script>
   </g>
 
-  <!-- Book sections markers with verse counts -->
+  <!-- Book sections markers -->
   <g id="book-markers">
-    <!-- Torah -->
     <line x1="60" y1="20" x2="60" y2="780" stroke="#8B4513" stroke-width="1" />
-    <text x="62" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Genesis</text>
+    <text x="62" y="795" fill="#8B4513" font-size="12">Genesis</text>
     
-    <!-- Historical -->
     <line x1="120" y1="20" x2="120" y2="780" stroke="#8B4513" stroke-width="1" />
-    <text x="122" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Joshua</text>
+    <text x="122" y="795" fill="#8B4513" font-size="12">Joshua</text>
     
-    <!-- Wisdom -->
     <line x1="180" y1="20" x2="180" y2="780" stroke="#8B4513" stroke-width="1" />
-    <text x="182" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Psalms</text>
+    <text x="182" y="795" fill="#8B4513" font-size="12">Psalms</text>
     
-    <!-- Prophets -->
     <line x1="220" y1="20" x2="220" y2="780" stroke="#8B4513" stroke-width="1" />
-    <text x="222" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Isaiah</text>
+    <text x="222" y="795" fill="#8B4513" font-size="12">Isaiah</text>
 
-    <!-- NT -->
     <line x1="260" y1="20" x2="260" y2="780" stroke="#8B4513" stroke-width="1" />
-    <text x="262" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Matthew</text>
+    <text x="262" y="795" fill="#8B4513" font-size="12">Matthew</text>
   </g>
 
   <!-- Position marker (vertical red line) -->

@@ -57,6 +57,7 @@
             background: white;
             box-shadow: -2px 0 10px rgba(0,0,0,0.1);
             transition: width 0.3s ease;
+            position: relative;
         }
 
         .navigation-panel.opened {
@@ -119,25 +120,20 @@
 </head>
 <body>
     <div class="game-container">
-        <!-- Left panel: Verse display -->
         <div class="verse-panel">
             <div class="verse-content">
                 <div class="target-verse" id="target-verse">
                     Loading verse...
                 </div>
                 <div class="context-verses" id="context-verses">
-                    <!-- Blurred context will be added here -->
                 </div>
             </div>
         </div>
 
-        <!-- Right panel: Bible navigation -->
         <div class="navigation-panel" id="navigation-panel">
             <div id="nav-container">
-                <!-- SVG will be loaded here -->
             </div>
             <div class="reference-display" id="reference-display">
-                <!-- Current reference will be shown here -->
             </div>
         </div>
     </div>
@@ -150,8 +146,6 @@
     </div>
 
     <script>
-        console.log('Script starting...');
-        
         const BOOKS = [
             'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',
             'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel',
@@ -231,7 +225,6 @@
                 selectedPosition = calculateBiblePosition(percentage);
                 console.log('Selected position:', selectedPosition);
                 
-                // Update red marker position
                 const marker = svg.querySelector('#position-marker');
                 if (marker) {
                     const svgX = (percentage / 100) * 260 + 20;
@@ -242,7 +235,6 @@
                     console.error('Marker element not found');
                 }
 
-                // Update reference display
                 document.getElementById('reference-display').textContent = 
                     `${selectedPosition.book} ${selectedPosition.chapter}:${selectedPosition.verse}`;
                 
@@ -253,10 +245,9 @@
         }
 
         function calculateBiblePosition(percentage) {
-            // Adjust the calculation for vertical layout
             const bookIndex = Math.floor((percentage / 100) * BOOKS.length);
-            const chapter = Math.floor((Math.random() * 20) + 1); // Simplified for now
-            const verse = Math.floor((Math.random() * 30) + 1); // Simplified for now
+            const chapter = Math.floor((Math.random() * 20) + 1);
+            const verse = Math.floor((Math.random() * 30) + 1);
             
             return {
                 book: BOOKS[bookIndex] || BOOKS[0],
@@ -305,7 +296,54 @@
             }
         }
 
-        // Handle guess submission
+        async function fetchNextVerse() {
+            const currentBookIndex = BOOKS.indexOf(currentVerse.book);
+            let nextBook = currentVerse.book;
+            let nextChapter = currentVerse.chapter;
+            let nextVerse = currentVerse.verse + 1;
+
+            try {
+                const response = await fetch(
+                    `https://bible-api.com/${nextBook}+${nextChapter}:${nextVerse}`
+                );
+                const data = await response.json();
+                
+                if (data.error) {
+                    nextVerse = 1;
+                    nextChapter++;
+                    const chapterResponse = await fetch(
+                        `https://bible-api.com/${nextBook}+${nextChapter}:${nextVerse}`
+                    );
+                    const chapterData = await chapterResponse.json();
+                    
+                    if (chapterData.error) {
+                        nextChapter = 1;
+                        nextVerse = 1;
+                        const bookIndex = (currentBookIndex + 1) % BOOKS.length;
+                        nextBook = BOOKS[bookIndex];
+                    } else {
+                        data = chapterData;
+                    }
+                }
+
+                currentVerse = {
+                    text: data.text.trim(),
+                    book: nextBook,
+                    chapter: nextChapter,
+                    verse: nextVerse
+                };
+
+                document.getElementById('target-verse').textContent = currentVerse.text;
+                document.getElementById('context-verses').innerHTML = generateContextVerses(currentVerse.text);
+                
+                closeBible();
+                document.getElementById('submit-guess').style.display = 'none';
+                document.getElementById('next-verse').style.display = 'none';
+            } catch (error) {
+                console.error('Error fetching next verse:', error);
+            }
+        }
+
         document.getElementById('submit-guess').addEventListener('click', () => {
             if (!selectedPosition) {
                 alert('Please select a position first');
@@ -320,15 +358,13 @@
             document.getElementById('next-verse').style.display = 'inline-block';
         });
 
-        // Handle next verse
         document.getElementById('next-verse').addEventListener('click', () => {
             document.getElementById('submit-guess').style.display = 'inline-block';
             document.getElementById('next-verse').style.display = 'none';
             document.getElementById('current-position').style.display = 'none';
-            fetchRandomVerse();
+            fetchNextVerse();
         });
 
-        // Calculate score based on distance
         function calculateScore(guess, actual) {
             const guessBookIndex = BOOKS.indexOf(guess.book);
             const actualBookIndex = BOOKS.indexOf(actual.book);
@@ -341,7 +377,6 @@
             return Math.round(5000 * Math.exp(-5 * totalDistance));
         }
 
-        // Wait for document ready before initializing
         $(document).ready(function() {
             console.log('Document ready, starting initialization...');
             loadSVG();
