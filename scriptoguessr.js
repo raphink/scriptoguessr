@@ -6,7 +6,7 @@ let selectedPosition = null;
 let score = 0;
 
 
-async function displayVerse(book, chapter, verse, text, reveal = false) {
+async function displayVerse(book, chapter, verse, text) {
    const response = await Promise.all([
        fetch(`https://bible-api.com/${book}+${chapter}:${verse-1}?translation=${TRANSLATION}`),
        fetch(`https://bible-api.com/${book}+${chapter}:${verse+1}?translation=${TRANSLATION}`)
@@ -16,7 +16,7 @@ async function displayVerse(book, chapter, verse, text, reveal = false) {
    
    const verseDisplay = document.getElementById('verse-content');
    verseDisplay.innerHTML = `
-       <div class="verse-reference" style="${reveal ? 'filter: none' : ''}">
+       <div class="verse-reference">
            ${book} ${chapter}:${verse}
        </div>
        <div class="verse-text">
@@ -24,10 +24,6 @@ async function displayVerse(book, chapter, verse, text, reveal = false) {
            ${text}
            <span class="verse-context"> ${nextData.error ? '' : nextData.text.trim()}</span>
        </div>`;
-
-   if (reveal) {
-       document.querySelectorAll('.verse-context').forEach(el => el.style.filter = 'none');
-   }
 }
 
 function loadSVG() {
@@ -81,6 +77,73 @@ function initializeEventListeners() {
        openBible();
        document.getElementById('submit-guess').style.display = 'block';
    });
+}
+
+const TOTAL_VERSES = BOOKS.reduce((bookAcc, currentBook) => {
+    const currentBookData = BIBLE_DATA[currentBook];
+    return bookAcc + currentBookData.versesPerChapter.reduce((chapAcc, verses) => chapAcc + verses, 0);
+}, 0);
+
+const cumulativeVersesPerBook = [];
+let cumulative = 0;
+for (let book of BOOKS) {
+    cumulativeVersesPerBook.push(cumulative);
+    const bookData = BIBLE_DATA[book];
+    cumulative += bookData.versesPerChapter.reduce((a, b) => a + b, 0);
+}
+
+const cumulativeVersesPerChapter = {};
+
+BOOKS.forEach(book => {
+    const bookData = BIBLE_DATA[book];
+    cumulativeVersesPerChapter[book] = [];
+    let cum = 0;
+    bookData.versesPerChapter.forEach(verses => {
+        cumulativeVersesPerChapter[book].push(cum);
+        cum += verses;
+    });
+});
+
+/**
+ * Optimized function to calculate total percentage using precomputed caches.
+ * @param {Object} reference - An object with properties: book, chapter, verse.
+ * @returns {number} The total percentage (0 to 100) up to the reference.
+ */
+function calculateVersePercentage(reference) {
+    const { book, chapter, verse } = reference;
+
+    // Validate the book
+    const bookIndex = BOOKS.indexOf(book);
+    if (bookIndex === -1) {
+        throw new Error(`Invalid book name: ${book}`);
+    }
+
+    const bookData = BIBLE_DATA[book];
+    if (!bookData) {
+        throw new Error(`No data found for book: ${book}`);
+    }
+
+    // Validate the chapter
+    if (chapter < 1 || chapter > bookData.chapters) {
+        throw new Error(`Invalid chapter number: ${chapter} for book ${book}`);
+    }
+
+    // Validate the verse
+    const versesInChapter = bookData.versesPerChapter[chapter - 1];
+    if (verse < 1 || verse > versesInChapter) {
+        throw new Error(`Invalid verse number: ${verse} for ${book} Chapter ${chapter}`);
+    }
+
+    // Calculate verses up to reference using caches
+    const versesUpToReference = cumulativeVersesPerBook[bookIndex] +
+                                 cumulativeVersesPerChapter[book][chapter - 1] +
+                                 verse;
+
+    // Calculate percentage
+    const percentage = (versesUpToReference / TOTAL_VERSES) * 100;
+
+    // Round to two decimal places for readability
+    return percentage;
 }
 
 function calculateBiblePosition(percentage) {
@@ -164,8 +227,25 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
    const points = calculateScore(selectedPosition, currentVerse);
    score = points;
    document.querySelector('.score').textContent = `Score: ${points}/5000`;
+
+   ansPercent = calculateVersePercentage(currentVerse);
+   console.log("Answer percent: ", ansPercent);
+   const svg = document.querySelector('#bible-svg');
+   if (!svg) {
+       console.error('SVG element not found');
+       return;
+   }
+   const marker = svg.querySelector('#ans-position-marker');
+   if (marker) {
+      const svgX = (ansPercent / 100) * 260 + 20;
+      marker.setAttribute('x1', svgX);
+      marker.setAttribute('x2', svgX);
+      console.log('Marker updated to position:', svgX);
+   }
    
-   await displayVerse(currentVerse.book, currentVerse.chapter, currentVerse.verse, currentVerse.text, true);
+   // Reveal verse ref and context
+   document.querySelectorAll('.verse-reference').forEach(el => el.style.filter = 'none');
+   document.querySelectorAll('.verse-context').forEach(el => el.style.filter = 'none');
    
    document.getElementById('submit-guess').style.display = 'none';
    document.getElementById('next-verse').style.display = 'inline-block';
@@ -178,18 +258,90 @@ document.getElementById('next-verse').addEventListener('click', () => {
    fetchRandomVerse();
 });
 
-function calculateScore(guess, actual) {
-   if (!guess || !actual) return 0;
+/**
+ * Converts a Bible reference to its sequential verse number.
+ * @param {Object} reference - An object with properties: book, chapter, verse.
+ * @returns {number} The sequential verse number.
+ */
+function getSequentialVerseNumber(reference) {
+    const { book, chapter, verse } = reference;
 
-   const guessBookIndex = BOOKS.indexOf(guess.book);
-   const actualBookIndex = BOOKS.indexOf(actual.book);
-   
-   const bookDistance = Math.abs(guessBookIndex - actualBookIndex);
-   const chapterDistance = Math.abs(guess.chapter - actual.chapter);
-   const verseDistance = Math.abs(guess.verse - actual.verse);
-   
-   const totalDistance = (bookDistance / BOOKS.length) + (chapterDistance / 150) + (verseDistance / 176);
-   return Math.round(5000 * Math.exp(-5 * totalDistance));
+    // Validate the book
+    const bookIndex = BOOKS.indexOf(book);
+    if (bookIndex === -1) {
+        throw new Error(`Invalid book name: ${book}`);
+    }
+
+    // Validate the chapter
+    const bookData = BIBLE_DATA[book];
+    if (chapter < 1 || chapter > bookData.chapters) {
+        throw new Error(`Invalid chapter number: ${chapter} for book ${book}`);
+    }
+
+    // Validate the verse
+    const versesInChapter = bookData.versesPerChapter[chapter - 1];
+    if (verse < 1 || verse > versesInChapter) {
+        throw new Error(`Invalid verse number: ${verse} for ${book} Chapter ${chapter}`);
+    }
+
+    let sequentialNumber = 0;
+
+    // Sum all verses in preceding books
+    for (let i = 0; i < bookIndex; i++) {
+        const currentBook = BOOKS[i];
+        const currentBookData = BIBLE_DATA[currentBook];
+        sequentialNumber += currentBookData.versesPerChapter.reduce((a, b) => a + b, 0);
+    }
+
+    // Sum all verses in preceding chapters of the current book
+    for (let c = 1; c < chapter; c++) {
+        sequentialNumber += bookData.versesPerChapter[c - 1];
+    }
+
+    // Add the verse number
+    sequentialNumber += verse;
+
+    return sequentialNumber;
+}
+
+/**
+ * Calculates the score based on the number of verses separating guess and actual.
+ * @param {Object} guess - The guessed position with properties: book, chapter, verse.
+ * @param {Object} actual - The actual position with properties: book, chapter, verse.
+ * @returns {number} The calculated score.
+ */
+function calculateScore(guess, actual) {
+    if (!guess || !actual) return 0;
+
+    try {
+        const guessSequential = getSequentialVerseNumber(guess);
+        const actualSequential = getSequentialVerseNumber(actual);
+
+        const distance = Math.abs(guessSequential - actualSequential);
+        console.log("Distance: ", distance);
+
+        // Determine the total number of verses in the Bible
+        let totalVerses = 0;
+        for (let book of BOOKS) {
+            totalVerses += BIBLE_DATA[book].versesPerChapter.reduce((a, b) => a + b, 0);
+        }
+        console.log("Total verses: ", totalVerses);
+
+        // Normalize the distance
+        const normalizedDistance = distance / totalVerses;
+
+        // Define a scoring formula
+        // For example, using exponential decay:
+        // Score decreases as distance increases
+        // Adjust the decay rate (k) as needed
+        const k = 10; // Decay rate
+        const score = Math.round(5000 * Math.exp(-k * normalizedDistance));
+
+        return score;
+    } catch (error) {
+        console.error(error.message);
+        return 0;
+    }
 }
 
 async function initGame() {
