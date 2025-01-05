@@ -2,6 +2,7 @@ const TRANSLATION = 'kjv';
 const BOOKS = Object.keys(BIBLE_DATA);
 const POS_WIDTH = 5;
 const BIND_WIDTH = 20;
+const MAX_ROUNDS = 5;
 
 let currentVerse = null;
 let selectedPosition = null;
@@ -336,6 +337,11 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
    
    document.getElementById('submit-guess').style.display = 'none';
    document.getElementById('next-verse').style.display = 'inline-block';
+
+   if (rounds === MAX_ROUNDS) {
+      // Finish game
+      alert("Game is finished");
+   }
 });
 
 document.getElementById('next-verse').addEventListener('click', () => {
