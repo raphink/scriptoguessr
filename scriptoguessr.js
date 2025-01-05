@@ -307,8 +307,8 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
    score = points;
    totalScore += score;
    rounds += 1;
-   document.querySelector('.score').textContent = `Score: ${points}/5000`;
-   document.querySelector('.total-score').textContent = `Total: ${totalScore}/${5000*rounds}`;
+   document.querySelector('.score').textContent = `Score: ${points}`;
+   //document.querySelector('.total-score').textContent = `Total: ${totalScore}/${5000*rounds}`;
 
    ansPercent = calculateVersePercentage(currentVerse);
 
@@ -340,9 +340,22 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
 
    if (rounds === MAX_ROUNDS) {
       // Finish game
-      alert("Game is finished");
+      $('#game-over p').html(`Total score: ${totalScore}`);
+      $('#game-over').modal();
+      resetGame();
+      document.getElementById('submit-guess').style.display = 'none';
+      document.getElementById('next-verse').style.display = 'none';
+      closeBible();
+      hidePositions();
+      fetchRandomVerse();
    }
 });
+
+function resetGame() {
+    score = 0;
+    totalScore = 0;
+    rounds = 0;
+}
 
 document.getElementById('next-verse').addEventListener('click', () => {
    document.getElementById('submit-guess').style.display = 'none';
