@@ -64,15 +64,9 @@ function initializeEventListeners() {
        const rect = svg.getBoundingClientRect();
        const x = e.clientX - rect.left;
        const percentage = (x / rect.width) * 100;
-       
        selectedPosition = calculateBiblePosition(percentage);
-       console.log('Selected position:', selectedPosition);
-       
-       console.log("rect width: ", rect.width);
-       console.log("rect right: ", rect.right);
 
        const scaleX = svg.width.baseVal.value / rect.width;
-       console.log("scaleX : ", scaleX);
 
        const marker = svg.querySelector('#position-marker');
        if (marker) {
@@ -115,6 +109,7 @@ BOOKS.forEach(book => {
         cum += verses;
     });
 });
+
 
 /**
  * Optimized function to calculate total percentage using precomputed caches.
@@ -200,6 +195,59 @@ function calculateBiblePosition(percentage) {
    };
 }
 
+/**
+ * Calculates the Bible reference (book, chapter, verse) based on the given percentage.
+ * @param {number} percentage - A value between 0 and 100 representing the position in the Bible.
+ * @returns {Object} An object containing the book, chapter, and verse.
+ */
+function calculateBiblePosition(percentage) {
+    if (percentage < 0 || percentage > 100) {
+        throw new Error("Percentage must be between 0 and 100.");
+    }
+
+    // Convert percentage to target verse number
+    const targetVerseNumber = Math.floor((percentage / 100) * TOTAL_VERSES);
+
+    // Find the book
+    let selectedBookIndex = 0;
+    for (let i = 0; i < cumulativeVersesPerBook.length; i++) {
+        if (targetVerseNumber < cumulativeVersesPerBook[i + 1] || i === cumulativeVersesPerBook.length - 1) {
+            selectedBookIndex = i;
+            break;
+        }
+    }
+
+    const selectedBook = BOOKS[selectedBookIndex];
+    const bookData = BIBLE_DATA[selectedBook];
+
+    // Calculate the verse number within the book
+    const versesBeforeBook = cumulativeVersesPerBook[selectedBookIndex];
+    const verseNumberInBook = targetVerseNumber - versesBeforeBook + 1; // +1 because verses start at 1
+
+    // Find the chapter
+    const versesPerChapter = bookData.versesPerChapter;
+    let selectedChapter = 1;
+    let cumulativeChapterVerses = 0;
+
+    for (let i = 0; i < versesPerChapter.length; i++) {
+        if (verseNumberInBook <= cumulativeChapterVerses + versesPerChapter[i]) {
+            selectedChapter = i + 1;
+            break;
+        }
+        cumulativeChapterVerses += versesPerChapter[i];
+    }
+
+    // Calculate the verse number within the chapter
+    const verseInChapter = verseNumberInBook - cumulativeChapterVerses;
+
+    return {
+        book: selectedBook,
+        chapter: selectedChapter,
+        verse: verseInChapter
+    };
+}
+
+
 async function fetchRandomVerse() {
    console.log('Fetching random verse...');
    try {
@@ -244,15 +292,20 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
    document.querySelector('.total-score').textContent = `Total: ${totalScore}/${5000*rounds}`;
 
    ansPercent = calculateVersePercentage(currentVerse);
+
+   console.log("position: ", calculateBiblePosition(ansPercent));
+
    console.log("Answer percent: ", ansPercent);
    const svg = document.querySelector('#bible-svg');
    if (!svg) {
        console.error('SVG element not found');
        return;
    }
+   const rect = svg.getBoundingClientRect();
+   const scaleX = svg.width.baseVal.value / rect.width;
    const marker = svg.querySelector('#ans-position-marker');
    if (marker) {
-      const svgX = (ansPercent / 100) * 260 + 20;
+      const svgX = (ansPercent / 100) * rect.width * scaleX;
       marker.setAttribute('x1', svgX);
       marker.setAttribute('x2', svgX);
       marker.setAttribute('stroke-width', POS_WIDTH);
