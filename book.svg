@@ -3,6 +3,8 @@
    viewBox="0 0 300 800"
    version="1.1"
    id="svg100"
+   width="300"
+   height="800"
    sodipodi:docname="book.svg"
    inkscape:version="1.2 (dc2aeda, 2022-05-15)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -24,12 +26,20 @@
      inkscape:zoom="0.70003571"
      inkscape:cx="102.13765"
      inkscape:cy="321.41217"
-     inkscape:window-width="1920"
+     inkscape:window-width="1390"
      inkscape:window-height="942"
      inkscape:window-x="0"
      inkscape:window-y="25"
-     inkscape:window-maximized="1"
+     inkscape:window-maximized="0"
      inkscape:current-layer="svg100" />
+  <rect
+     width="19.191919"
+     height="800"
+     fill="#8b4513"
+     id="rect451"
+     x="280.80807"
+     y="0"
+     style="stroke-width:0.252929" />
   <!-- Background/binding -->
   <rect
      width="19.191919"
@@ -118,14 +128,6 @@
      y2="780"
      stroke="#00FF00"
      stroke-width="2" />
-  <rect
-     width="19.191919"
-     height="800"
-     fill="#8b4513"
-     id="rect451"
-     x="280.80807"
-     y="0"
-     style="stroke-width:0.252929" />
   <line
      x1="37.263157"
      y1="20"

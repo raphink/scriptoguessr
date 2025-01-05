@@ -1,6 +1,7 @@
 const TRANSLATION = 'kjv';
 const BOOKS = Object.keys(BIBLE_DATA);
 const POS_WIDTH = 5;
+const BIND_WIDTH = 20;
 
 let currentVerse = null;
 let selectedPosition = null;
@@ -67,9 +68,15 @@ function initializeEventListeners() {
        selectedPosition = calculateBiblePosition(percentage);
        console.log('Selected position:', selectedPosition);
        
+       console.log("rect width: ", rect.width);
+       console.log("rect right: ", rect.right);
+
+       const scaleX = svg.width.baseVal.value / rect.width;
+       console.log("scaleX : ", scaleX);
+
        const marker = svg.querySelector('#position-marker');
        if (marker) {
-           const svgX = (percentage / 100) * 260 + 20;
+           const svgX = x * scaleX;
            marker.setAttribute('x1', svgX);
            marker.setAttribute('x2', svgX);
            marker.setAttribute('stroke-width', POS_WIDTH);
