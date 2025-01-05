@@ -5,6 +5,8 @@ const POS_WIDTH = 5;
 let currentVerse = null;
 let selectedPosition = null;
 let score = 0;
+let rounds = 0;
+let totalScore = 0;
 
 
 async function displayVerse(book, chapter, verse, text) {
@@ -229,7 +231,10 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
 
    const points = calculateScore(selectedPosition, currentVerse);
    score = points;
+   totalScore += score;
+   rounds += 1;
    document.querySelector('.score').textContent = `Score: ${points}/5000`;
+   document.querySelector('.total-score').textContent = `Total: ${totalScore}/${5000*rounds}`;
 
    ansPercent = calculateVersePercentage(currentVerse);
    console.log("Answer percent: ", ansPercent);
