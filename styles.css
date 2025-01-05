@@ -63,6 +63,10 @@ body {
     width: 400px;
 }
 
+#nav-container {
+    margin-top: 150px;
+}
+
 #bible-svg {
     height: 100%;
     width: auto;
