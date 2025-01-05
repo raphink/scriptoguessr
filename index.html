@@ -163,9 +163,71 @@
             '1 John', '2 John', '3 John', 'Jude', 'Revelation'
         ];
 
-        let currentVerse = null;
-        let selectedPosition = null;
-        let score = 0;
+        let BIBLE_MAP = null;
+
+        async function buildBibleMap() {
+            const map = {};
+            console.log('Building Bible map...');
+            
+            for (const book of BOOKS) {
+                map[book] = { chapters: {} };
+                let chapter = 1;
+                let hasMore = true;
+
+                while (hasMore) {
+                    try {
+                        const response = await fetch(`https://bible-api.com/${book}+${chapter}:1`);
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            hasMore = false;
+                        } else {
+                            // Found a valid chapter, now find last verse
+                            let verse = 1;
+                            let lastValidVerse = 1;
+                            let searching = true;
+
+                            while (searching) {
+                                const verseResponse = await fetch(`https://bible-api.com/${book}+${chapter}:${verse}`);
+                                const verseData = await verseResponse.json();
+                                
+                                if (verseData.error) {
+                                    searching = false;
+                                } else {
+                                    lastValidVerse = verse;
+                                    verse += 5; // Skip by 5s for efficiency
+                                }
+                            }
+
+                            // Binary search for exact last verse
+                            let left = Math.max(1, lastValidVerse - 4);
+                            let right = lastValidVerse;
+                            while (left <= right) {
+                                verse = Math.floor((left + right) / 2);
+                                const verseResponse = await fetch(`https://bible-api.com/${book}+${chapter}:${verse}`);
+                                const verseData = await verseResponse.json();
+                                
+                                if (verseData.error) {
+                                    right = verse - 1;
+                                } else {
+                                    left = verse + 1;
+                                    lastValidVerse = verse;
+                                }
+                            }
+
+                            map[book].chapters[chapter] = lastValidVerse;
+                            chapter++;
+                        }
+                    } catch (error) {
+                        console.error(`Error processing ${book} ${chapter}:`, error);
+                        hasMore = false;
+                    }
+                }
+            }
+            
+            console.log('Bible map complete:', map);
+            return map;
+        }
 
         function generateContextVerses(mainVerse) {
             return [
@@ -351,8 +413,8 @@
             }
 
             const points = calculateScore(selectedPosition, currentVerse);
-            score += points;
-            document.getElementById('score').textContent = score;
+            score = points; // Just show current round score
+            document.querySelector('.score').textContent = `Score: ${points}/5000`;
             
             document.getElementById('submit-guess').style.display = 'none';
             document.getElementById('next-verse').style.display = 'inline-block';
@@ -366,6 +428,8 @@
         });
 
         function calculateScore(guess, actual) {
+            if (!guess || !actual) return 0;
+
             const guessBookIndex = BOOKS.indexOf(guess.book);
             const actualBookIndex = BOOKS.indexOf(actual.book);
             
@@ -373,7 +437,7 @@
             const chapterDistance = Math.abs(guess.chapter - actual.chapter);
             const verseDistance = Math.abs(guess.verse - actual.verse);
             
-            const totalDistance = (bookDistance / 66) + (chapterDistance / 150) + (verseDistance / 176);
+            const totalDistance = (bookDistance / BOOKS.length) + (chapterDistance / 150) + (verseDistance / 176);
             return Math.round(5000 * Math.exp(-5 * totalDistance));
         }
 
