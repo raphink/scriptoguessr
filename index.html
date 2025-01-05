@@ -359,9 +359,9 @@
         });
 
         document.getElementById('next-verse').addEventListener('click', () => {
-            document.getElementById('submit-guess').style.display = 'inline-block';
+            document.getElementById('submit-guess').style.display = 'none';
             document.getElementById('next-verse').style.display = 'none';
-            document.getElementById('current-position').style.display = 'none';
+            closeBible();
             fetchNextVerse();
         });
 
