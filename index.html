@@ -142,11 +142,35 @@
         }
 
         function calculateScore(guess) {
-            let points = 0;
-            if (guess.book.toLowerCase() === currentVerse.book.toLowerCase()) points += 5;
-            if (Number(guess.chapter) === currentVerse.chapter) points += 3;
-            if (Number(guess.verse) === currentVerse.verse) points += 2;
-            return points;
+            // Convert guess and actual verse to numerical positions
+            const guessBookIndex = BOOKS.findIndex(book => 
+                book.toLowerCase() === guess.book.toLowerCase());
+            const actualBookIndex = BOOKS.findIndex(book => 
+                book.toLowerCase() === currentVerse.book.toLowerCase());
+            
+            if (guessBookIndex === -1) return 0; // Invalid book guess
+            
+            // Calculate distances for each dimension
+            const bookDistance = Math.abs(guessBookIndex - actualBookIndex);
+            const chapterDistance = Math.abs(guess.chapter - currentVerse.chapter);
+            const verseDistance = Math.abs(guess.verse - currentVerse.verse);
+            
+            // Normalize distances (66 books, ~50 chapters max, ~150 verses max)
+            const normalizedBookDist = bookDistance / 66;
+            const normalizedChapterDist = chapterDistance / 50;
+            const normalizedVerseDist = verseDistance / 150;
+            
+            // Calculate weighted combined distance (0 to 1)
+            const weightedDistance = (
+                (normalizedBookDist * 0.5) + 
+                (normalizedChapterDist * 0.3) + 
+                (normalizedVerseDist * 0.2)
+            );
+            
+            // Convert to score (5000 points max, exponential falloff)
+            const score = Math.round(5000 * Math.exp(-5 * weightedDistance));
+            
+            return score;
         }
 
         // Handle form submission
@@ -168,7 +192,12 @@
             // Show result
             $('#result-text').html(
                 `Correct reference: ${currentVerse.book} ${currentVerse.chapter}:${currentVerse.verse}<br>` +
-                `Points earned: ${pointsEarned}`
+                `Points: ${pointsEarned} / 5000
+                Distance details:
+                - Book: ${Math.abs(BOOKS.findIndex(b => b.toLowerCase() === guess.book.toLowerCase()) - 
+                          BOOKS.findIndex(b => b.toLowerCase() === currentVerse.book.toLowerCase()))} books away
+                - Chapter: ${Math.abs(guess.chapter - currentVerse.chapter)} chapters away
+                - Verse: ${Math.abs(guess.verse - currentVerse.verse)} verses away`
             );
             $('#result').show();
             
