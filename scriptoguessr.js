@@ -1,5 +1,6 @@
 const TRANSLATION = 'kjv';
 const BOOKS = Object.keys(BIBLE_DATA);
+const POS_WIDTH = 5;
 
 let currentVerse = null;
 let selectedPosition = null;
@@ -69,7 +70,7 @@ function initializeEventListeners() {
            const svgX = (percentage / 100) * 260 + 20;
            marker.setAttribute('x1', svgX);
            marker.setAttribute('x2', svgX);
-           marker.setAttribute('stroke-width', 2);
+           marker.setAttribute('stroke-width', POS_WIDTH);
            console.log('Marker updated to position:', svgX);
        }
 
@@ -242,7 +243,7 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
       const svgX = (ansPercent / 100) * 260 + 20;
       marker.setAttribute('x1', svgX);
       marker.setAttribute('x2', svgX);
-      marker.setAttribute('stroke-width', 2);
+      marker.setAttribute('stroke-width', POS_WIDTH);
       console.log('Marker updated to position:', svgX);
    }
    

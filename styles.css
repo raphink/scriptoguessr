@@ -65,6 +65,7 @@ body {
 
 #nav-container {
     margin-top: 150px;
+    cursor: pointer;
 }
 
 #bible-svg {
