@@ -2,56 +2,44 @@
   <!-- Background/binding -->
   <rect width="300" height="800" fill="#8B4513" />
   
-  <!-- Pages side -->
+  <!-- Pages area -->
   <rect x="20" y="20" width="260" height="760" fill="#F5F5DC" />
   
-  <!-- Page lines effect -->
-  <g id="page-lines">
-    <!-- Vertical lines to simulate page edges -->
-    <path d="M20 20 L20 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M40 20 L40 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M60 20 L60 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M80 20 L80 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M100 20 L100 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M120 20 L120 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M140 20 L140 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M160 20 L160 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M180 20 L180 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M200 20 L200 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M220 20 L220 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M240 20 L240 780" stroke="#D3D3D3" stroke-width="0.5" />
-    <path d="M260 20 L260 780" stroke="#D3D3D3" stroke-width="0.5" />
+  <!-- Generate vertical lines for pages -->
+  <g id="pages">
+    <!-- Start at x=20, end at x=280, step by 3 -->
+    <script type="text/javascript">
+      <![CDATA[
+      for(let i = 20; i <= 280; i += 3) {
+        document.write(`<line x1="${i}" y1="20" x2="${i}" y2="780" stroke="#D3D3D3" stroke-width="1.5" />`);
+      }
+      ]]>
+    </script>
   </g>
 
-  <!-- Book sections markers -->
+  <!-- Book sections markers with verse counts -->
   <g id="book-markers">
-    <!-- Old Testament -->
-    <line x1="20" y1="150" x2="280" y2="150" stroke="#8B4513" stroke-width="2" />
-    <text x="290" y="155" fill="#8B4513" font-size="12">Genesis</text>
+    <!-- Torah -->
+    <line x1="60" y1="20" x2="60" y2="780" stroke="#8B4513" stroke-width="1" />
+    <text x="62" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Genesis</text>
     
-    <line x1="20" y1="300" x2="280" y2="300" stroke="#8B4513" stroke-width="2" />
-    <text x="290" y="305" fill="#8B4513" font-size="12">Psalms</text>
+    <!-- Historical -->
+    <line x1="120" y1="20" x2="120" y2="780" stroke="#8B4513" stroke-width="1" />
+    <text x="122" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Joshua</text>
     
-    <!-- New Testament -->
-    <line x1="20" y1="500" x2="280" y2="500" stroke="#8B4513" stroke-width="2" />
-    <text x="290" y="505" fill="#8B4513" font-size="12">Matthew</text>
+    <!-- Wisdom -->
+    <line x1="180" y1="20" x2="180" y2="780" stroke="#8B4513" stroke-width="1" />
+    <text x="182" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Psalms</text>
     
-    <line x1="20" y1="600" x2="280" y2="600" stroke="#8B4513" stroke-width="2" />
-    <text x="290" y="605" fill="#8B4513" font-size="12">Revelation</text>
+    <!-- Prophets -->
+    <line x1="220" y1="20" x2="220" y2="780" stroke="#8B4513" stroke-width="1" />
+    <text x="222" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Isaiah</text>
+
+    <!-- NT -->
+    <line x1="260" y1="20" x2="260" y2="780" stroke="#8B4513" stroke-width="1" />
+    <text x="262" y="795" fill="#8B4513" font-size="12" transform="rotate(0)">Matthew</text>
   </g>
 
-  <!-- Current position marker (red line) -->
-  <line x1="20" y1="400" x2="280" y2="400" stroke="#FF0000" stroke-width="3" />
-  
-  <!-- Gradient overlay for page effect -->
-  <rect x="20" y="20" width="260" height="760" fill="url(#pageGradient)" opacity="0.2" />
-  
-  <!-- Definitions -->
-  <defs>
-    <linearGradient id="pageGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#000000;stop-opacity:0.1" />
-      <stop offset="50%" style="stop-color:#000000;stop-opacity:0" />
-      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.1" />
-    </linearGradient>
-  </defs>
+  <!-- Position marker (vertical red line) -->
+  <line id="position-marker" x1="150" x2="150" y1="20" y2="780" stroke="#FF0000" stroke-width="2" />
 </svg>
