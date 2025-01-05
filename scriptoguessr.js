@@ -9,6 +9,8 @@ let score = 0;
 let rounds = 0;
 let totalScore = 0;
 
+let selectEnabled = false;
+
 
 async function displayVerse(book, chapter, verse, text) {
    const response = await Promise.all([
@@ -61,6 +63,12 @@ function initializeEventListeners() {
 
    svg.addEventListener('click', (e) => {
        console.log('SVG clicked');
+
+       if (!selectEnabled) {
+         console.warn("Select is not enabled");
+         return;
+       }
+
        const rect = svg.getBoundingClientRect();
        const x = e.clientX - rect.left;
        const svgWidth = svg.width.baseVal.value;
@@ -68,7 +76,7 @@ function initializeEventListeners() {
        const svgX = x * scaleX;
 
        if (svgX < BIND_WIDTH || svgX > svgWidth-BIND_WIDTH) {
-         console.error("Click out of bounds");
+         console.warn("Click out of bounds");
          return;
        }
 
@@ -268,6 +276,7 @@ async function fetchRandomVerse() {
        closeBible();
        document.getElementById('submit-guess').style.display = 'none';
        document.getElementById('next-verse').style.display = 'none';
+       selectEnabled = true;
    } catch (error) {
        console.error('Error fetching verse:', error);
        document.getElementById('verse-content').textContent = 'Error loading verse';
@@ -289,6 +298,9 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
        alert('Please select a position first');
        return;
    }
+
+   // disable selection
+   selectEnabled = false;
 
    const points = calculateScore(selectedPosition, currentVerse);
    score = points;
