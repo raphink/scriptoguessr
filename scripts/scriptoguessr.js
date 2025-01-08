@@ -28,9 +28,6 @@ async function displayVerse(book, chapter, verse, text) {
 
   const [prevData, nextData] = await Promise.all(response.map((r) => r.json()));
 
-  console.log('prevData', prevData);
-  console.log('nextData', nextData);
-
   const verseDisplay = document.getElementById('verse-content');
   verseDisplay.classList.add('untouchable');
   verseDisplay.innerHTML = `
