@@ -110,7 +110,7 @@ function initializeEventListeners() {
 
     const percentage =
       ((svgX - BIND_WIDTH) / (svgWidth - 2 * BIND_WIDTH)) * 100;
-    selectedPosition = calculateBiblePosition(percentage);
+    hoverSelectedPosition = calculateBiblePosition(percentage);
 
     if (marker) {
       marker.setAttribute('x1', svgX);
@@ -121,7 +121,7 @@ function initializeEventListeners() {
 
     document.getElementById(
       'hover-display'
-    ).textContent = `${selectedPosition.book} ${selectedPosition.chapter}:${selectedPosition.verse}`;
+    ).textContent = `${hoverSelectedPosition.book} ${hoverSelectedPosition.chapter}:${hoverSelectedPosition.verse}`;
   });
 
   svg.addEventListener('click', (e) => {
@@ -598,7 +598,6 @@ function calculateScore(guess, actual) {
     const actualSequential = getSequentialVerseNumber(actual);
 
     const distance = Math.abs(guessSequential - actualSequential);
-    console.log('Distance: ', distance);
 
     // Determine the total number of verses in the Bible
     let totalVerses = 0;
@@ -608,7 +607,6 @@ function calculateScore(guess, actual) {
         0
       );
     }
-    console.log('Total verses: ', totalVerses);
 
     // Normalize the distance
     const normalizedDistance = distance / totalVerses;
