@@ -108,8 +108,10 @@ function setPositionSelector(svg, e, markSelected=false) {
     const svgY = y * scaleY;
 
     let markerSelector = '#hover-position-marker';
+    let displayId = 'hover-display';
     if (markSelected) {
       markerSelector = '#position-marker';
+      displayId = 'reference-display';
     }
     const marker = svg.querySelector(markerSelector);
 
@@ -122,7 +124,7 @@ function setPositionSelector(svg, e, markSelected=false) {
       console.warn('Click out of bounds');
       if (!markSelected && marker) {
         marker.setAttribute('stroke-width', 0);
-        document.getElementById('hover-display').style.display = 'none';
+        document.getElementById(displayId).style.display = 'none';
       }
       return;
     }
@@ -138,9 +140,8 @@ function setPositionSelector(svg, e, markSelected=false) {
       console.log('Marker updated to position:', svgX);
     }
 
-    document.getElementById(
-      'reference-display'
-    ).textContent = `${position.book} ${position.chapter}:${position.verse}`;
+    document.getElementById(displayId).textContent = `${position.book} ${position.chapter}:${position.verse}`;
+    document.getElementById(displayId).style.display = 'block';
 
     if (markSelected) {
       selectedPosition = position;
@@ -358,7 +359,7 @@ async function fetchRandomVerse() {
 
 function openBible() {
   //document.getElementById('navigation-panel').classList.add('opened');
-  document.getElementById('reference-display').style.display = 'block';
+  //document.getElementById('reference-display').style.display = 'block';
 }
 
 function closeBible() {
