@@ -141,7 +141,7 @@ function setPositionSelector(svg, e, markSelected=false) {
       console.log('Marker updated to position:', svgX);
     }
 
-    document.getElementById(displayId).textContent = `${position.book} ${position.chapter}:${position.verse}`;
+    document.querySelector(`#${displayId} .reference-text`).textContent = `${position.book} ${position.chapter}:${position.verse}`;
     document.getElementById(displayId).style.display = 'block';
 
     if (markSelected) {
@@ -236,6 +236,24 @@ function getVerseAtDistance(startVerse, distance) {
   }
 
   return allVerses[newIndex];
+}
+
+function selectAtDistance(distance) {
+  if (selectedPosition === null) {
+    // TODO: UI error
+    console.error("No selected position set");
+    return;
+  }
+
+  const position = getVerseAtDistance(selectedPosition, distance);
+  if (position == null) {
+    // TODO: UI error
+    console.error("out of bounds");
+    return;
+  }
+
+  selectedPosition = position;
+  document.querySelector(`#reference-display .reference-text`).textContent = `${position.book} ${position.chapter}:${position.verse}`;
 }
 
 /**
@@ -426,6 +444,22 @@ function updateScore(points) {
   document.querySelector('.score').textContent = `Score: ${points}`;
 }
 
+document.getElementById('back-10').addEventListener('click', () => {
+  selectAtDistance(-10);
+});
+
+document.getElementById('back-1').addEventListener('click', () => {
+  selectAtDistance(-1);
+});
+
+document.getElementById('fwd-1').addEventListener('click', () => {
+  selectAtDistance(1);
+});
+
+document.getElementById('fwd-10').addEventListener('click', () => {
+  selectAtDistance(10);
+});
+
 document.getElementById('submit-guess').addEventListener('click', async () => {
   if (!selectedPosition) {
     alert('Please select a position first');
@@ -435,15 +469,16 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
   // disable selection
   selectEnabled = false;
 
+  console.log('selected: ', selectedPosition);
+  console.log('current: ', currentVerse);
   const points = calculateScore(selectedPosition, currentVerse);
+
   score = points;
   totalScore += score;
   rounds += 1;
   updateScore(points);
 
   ansPercent = calculateVersePercentage(currentVerse);
-
-  console.log('position: ', calculateBiblePosition(ansPercent));
 
   console.log('Answer percent: ', ansPercent);
   const svg = document.querySelector('#bible-svg');
