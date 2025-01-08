@@ -414,6 +414,11 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
   const rect = svg.getBoundingClientRect();
   const svgWidth = svg.width.baseVal.value;
   const marker = svg.querySelector('#ans-position-marker');
+  const hoverMarker = svg.querySelector('#hover-position-marker');
+  if (hoverMarker) {
+    hoverMarker.setAttribute('stroke-width', 0);
+    document.getElementById('hover-display').style.display = 'none';
+  }
   if (marker) {
     const svgX = (ansPercent / 100) * (svgWidth - 2 * BIND_WIDTH) + BIND_WIDTH;
     marker.setAttribute('x1', svgX);

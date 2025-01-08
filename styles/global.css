@@ -52,9 +52,6 @@ body {
 }
 
 .untouchable {
-  overflow: hidden;
-  overflow-x: hidden;
-  overflow-y: hidden;
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
@@ -190,4 +187,14 @@ button:hover {
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   background: white;
   display: none;
+}
+
+@media screen and (max-width: 620px) {
+  .verse-reference {
+    font-size: small;
+  }
+
+  .verse-text {
+    font-size: x-large;
+  }
 }
