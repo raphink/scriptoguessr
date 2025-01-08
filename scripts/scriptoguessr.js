@@ -3,6 +3,7 @@ const BOOKS = Object.keys(BIBLE_DATA);
 const POS_WIDTH = 5;
 const BIND_WIDTH = 20;
 const MAX_ROUNDS = 5;
+const MAX_SCORE = 5000;
 
 let currentVerse = null;
 let selectedPosition = null;
@@ -603,8 +604,8 @@ function calculateScore(guess, actual) {
     // For example, using exponential decay:
     // Score decreases as distance increases
     // Adjust the decay rate (k) as needed
-    const k = 10; // Decay rate
-    const score = Math.round(5000 * Math.exp(-k * normalizedDistance));
+    const k = 14; // Decay rate
+    const score = Math.round(MAX_SCORE * Math.exp(-k * normalizedDistance));
 
     return score;
   } catch (error) {
