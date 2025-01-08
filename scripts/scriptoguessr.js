@@ -113,6 +113,7 @@ function setPositionSelector(svg, e, markSelected=false) {
     if (markSelected) {
       markerSelector = '#position-marker';
       displayId = 'reference-display';
+      showSelButtons();
     }
     const marker = svg.querySelector(markerSelector);
 
@@ -141,10 +142,12 @@ function setPositionSelector(svg, e, markSelected=false) {
       console.log('Marker updated to position:', svgX);
     }
 
-    document.getElementById(displayId).textContent = `${position.book} ${position.chapter}:${position.verse}`;
+    document.querySelector(`#${displayId} .reference-text`).textContent = `${position.book} ${position.chapter}:${position.verse}`;
     document.getElementById(displayId).style.display = 'block';
 
     if (markSelected) {
+      idx = getVerseAtDistance(position, 0);
+      hideSelButtons(idx);
       selectedPosition = position;
     }
 
@@ -183,6 +186,108 @@ BOOKS.forEach((book) => {
     cum += verses;
   });
 });
+
+
+let allVerses = [];
+
+/**
+ * Initializes a flat array of all verses in the Bible based on BIBLE_DATA.
+ * Each verse is represented as an object: { book, chapter, verse }.
+ */
+function initializeAllVerses() {
+  for (const bookName in BIBLE_DATA) {
+    const book = BIBLE_DATA[bookName];
+    for (let ch = 1; ch <= book.chapters; ch++) {
+      for (let v = 1; v <= book.versesPerChapter[ch - 1]; v++) {
+        allVerses.push({ book: bookName, chapter: ch, verse: v });
+      }
+    }
+  }
+}
+
+/**
+ * Returns the verse at a specified distance from the startVerse.
+ * @param {Object} startVerse - An object with properties {book, chapter, verse}.
+ * @param {number} distance - Number of verses to move forward (positive) or backward (negative).
+ * @returns {Object|null} - The verse object at the new position or null if out of bounds.
+ */
+function getVerseAtDistance(startVerse, distance) {
+  // Initialize the flattened verse list if not already done.
+  if (allVerses.length === 0) {
+    initializeAllVerses();
+  }
+
+  // Find the index of the starting verse.
+  const startIndex = allVerses.findIndex(v =>
+    v.book === startVerse.book &&
+    v.chapter === startVerse.chapter &&
+    v.verse === startVerse.verse
+  );
+
+  if (startIndex === -1) {
+    console.error("Start verse not found in Bible data.");
+    return null;
+  }
+
+  // Calculate the new index.
+  const newIndex = startIndex + distance;
+
+  // Check boundaries.
+  if (newIndex < 0 || newIndex >= allVerses.length) {
+    console.warn("Requested verse distance is out of bounds.");
+    return null;
+  }
+
+  return newIndex;
+}
+
+function showSelButtons() {
+  document.querySelectorAll('.sel-button').forEach(btn => {
+    btn.style.display = 'inline-block';
+  });
+}
+
+function hideSelButtons(idx) {
+  if (idx < 10) {
+    document.getElementById('back-10').style.display = 'none';
+  }
+  if (idx == 0) {
+    document.getElementById('back-1').style.display = 'none';
+  }
+  if (idx > allVerses.length - 10) {
+    document.getElementById('fwd-10').style.display = 'none';
+  }
+  if (idx == allVerses.length - 1) {
+    document.getElementById('fwd-1').style.display = 'none';
+  }
+}
+
+function selectAtDistance(distance) {
+  if (selectedPosition === null) {
+    // TODO: UI error
+    console.error("No selected position set");
+    return;
+  }
+
+  showSelButtons();
+
+  const idx = getVerseAtDistance(selectedPosition, distance);
+  let position = allVerses[idx];
+  if (position == null) {
+    console.warn("out of bounds");
+    if (distance < 0) {
+      // Get first verse
+      position = allVerses[0];
+    } else {
+      position = allVerses[allVerses.length-1];
+    }
+  }
+
+  hideSelButtons(idx);
+
+  selectedPosition = position;
+  document.querySelector(`#reference-display .reference-text`).textContent = `${position.book} ${position.chapter}:${position.verse}`;
+}
 
 /**
  * Optimized function to calculate total percentage using precomputed caches.
@@ -372,6 +477,22 @@ function updateScore(points) {
   document.querySelector('.score').textContent = `Score: ${points}`;
 }
 
+document.getElementById('back-10').addEventListener('click', () => {
+  selectAtDistance(-10);
+});
+
+document.getElementById('back-1').addEventListener('click', () => {
+  selectAtDistance(-1);
+});
+
+document.getElementById('fwd-1').addEventListener('click', () => {
+  selectAtDistance(1);
+});
+
+document.getElementById('fwd-10').addEventListener('click', () => {
+  selectAtDistance(10);
+});
+
 document.getElementById('submit-guess').addEventListener('click', async () => {
   if (!selectedPosition) {
     alert('Please select a position first');
@@ -381,15 +502,16 @@ document.getElementById('submit-guess').addEventListener('click', async () => {
   // disable selection
   selectEnabled = false;
 
+  console.log('selected: ', selectedPosition);
+  console.log('current: ', currentVerse);
   const points = calculateScore(selectedPosition, currentVerse);
+
   score = points;
   totalScore += score;
   rounds += 1;
   updateScore(points);
 
   ansPercent = calculateVersePercentage(currentVerse);
-
-  console.log('position: ', calculateBiblePosition(ansPercent));
 
   console.log('Answer percent: ', ansPercent);
   const svg = document.querySelector('#bible-svg');
