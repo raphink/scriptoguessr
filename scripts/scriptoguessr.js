@@ -604,6 +604,16 @@ function calculateScore(guess, actual) {
     // For example, using exponential decay:
     // Score decreases as distance increases
     // Adjust the decay rate (k) as needed
+    // At k=14, the scoring is:
+    //   d=0      s=5000
+    //   d=1      s=4998
+    //   d=10     s=4978
+    //   d=100    s=4775
+    //   d=1000   s=3190
+    //   d=10000  s=56
+    //   d=15000  s=6
+    //   d=20000  s=1
+    //   d=30000  s=0
     const k = 14; // Decay rate
     const score = Math.round(MAX_SCORE * Math.exp(-k * normalizedDistance));
 
