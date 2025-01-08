@@ -113,7 +113,7 @@ function setPositionSelector(svg, e, markSelected=false) {
     if (markSelected) {
       markerSelector = '#position-marker';
       displayId = 'reference-display';
-      showButtons();
+      showSelButtons();
     }
     const marker = svg.querySelector(markerSelector);
 
@@ -147,7 +147,7 @@ function setPositionSelector(svg, e, markSelected=false) {
 
     if (markSelected) {
       idx = getVerseAtDistance(position, 0);
-      hideButtons(idx);
+      hideSelButtons(idx);
       selectedPosition = position;
     }
 
@@ -241,13 +241,13 @@ function getVerseAtDistance(startVerse, distance) {
   return newIndex;
 }
 
-function showButtons() {
-  document.querySelectorAll('.button').forEach(btn => {
+function showSelButtons() {
+  document.querySelectorAll('.sel-button').forEach(btn => {
     btn.style.display = 'inline-block';
   });
 }
 
-function hideButtons(idx) {
+function hideSelButtons(idx) {
   if (idx < 10) {
     document.getElementById('back-10').style.display = 'none';
   }
@@ -269,7 +269,7 @@ function selectAtDistance(distance) {
     return;
   }
 
-  showButtons();
+  showSelButtons();
 
   const idx = getVerseAtDistance(selectedPosition, distance);
   let position = allVerses[idx];
@@ -283,7 +283,7 @@ function selectAtDistance(distance) {
     }
   }
 
-  hideButtons(idx);
+  hideSelButtons(idx);
 
   selectedPosition = position;
   document.querySelector(`#reference-display .reference-text`).textContent = `${position.book} ${position.chapter}:${position.verse}`;

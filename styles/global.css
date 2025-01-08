@@ -190,7 +190,7 @@ button:hover {
   user-select: none;
 }
 
-.button {
+.sel-button {
   cursor: pointer;
 }
 
