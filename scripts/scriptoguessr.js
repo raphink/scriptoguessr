@@ -113,6 +113,7 @@ function setPositionSelector(svg, e, markSelected=false) {
     if (markSelected) {
       markerSelector = '#position-marker';
       displayId = 'reference-display';
+      showButtons();
     }
     const marker = svg.querySelector(markerSelector);
 
@@ -235,7 +236,13 @@ function getVerseAtDistance(startVerse, distance) {
     return null;
   }
 
-  return allVerses[newIndex];
+  return newIndex;
+}
+
+function showButtons() {
+  document.querySelectorAll('.button').forEach(btn => {
+    btn.style.display = 'inline-block';
+  });
 }
 
 function selectAtDistance(distance) {
@@ -245,11 +252,31 @@ function selectAtDistance(distance) {
     return;
   }
 
-  const position = getVerseAtDistance(selectedPosition, distance);
+  showButtons();
+
+  const idx = getVerseAtDistance(selectedPosition, distance);
+  let position = allVerses[idx];
   if (position == null) {
-    // TODO: UI error
-    console.error("out of bounds");
-    return;
+    console.warn("out of bounds");
+    if (distance < 0) {
+      // Get first verse
+      position = allVerses[0];
+    } else {
+      position = allVerses[allVerses.length-1];
+    }
+  }
+
+  if (idx < 10) {
+    document.getElementById('back-10').style.display = 'none';
+  }
+  if (idx == 0) {
+    document.getElementById('back-1').style.display = 'none';
+  }
+  if (idx > allVerses.length - 10) {
+    document.getElementById('fwd-10').style.display = 'none';
+  }
+  if (idx == allVerses.length - 1) {
+    document.getElementById('fwd-1').style.display = 'none';
   }
 
   selectedPosition = position;
