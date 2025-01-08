@@ -82,7 +82,21 @@ function initializeEventListeners() {
       console.warn('Movement is not enabled');
       return;
     }
+    console.log('Mouse moved');
+    setPositionSelector(svg, e, false);
+  });
 
+  svg.addEventListener('click', (e) => {
+    if (!selectEnabled) {
+      console.warn('Select is not enabled');
+      return;
+    }
+    console.log('SVG clicked');
+    setPositionSelector(svg, e, true);
+  });
+}
+
+function setPositionSelector(svg, e, markSelected=false) {
     const rect = svg.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -92,7 +106,12 @@ function initializeEventListeners() {
     const scaleY = svgHeight / rect.height;
     const svgX = x * scaleX;
     const svgY = y * scaleY;
-    const marker = svg.querySelector('#hover-position-marker');
+
+    let markerSelector = '#hover-position-marker';
+    if (markSelected) {
+      markerSelector = '#position-marker';
+    }
+    const marker = svg.querySelector(markerSelector);
 
     if (
       svgX < BIND_WIDTH ||
@@ -100,54 +119,18 @@ function initializeEventListeners() {
       svgY < 40 ||
       svgY > svgHeight - 40
     ) {
-      if (marker) {
+      console.warn('Click out of bounds');
+      if (!markSelected && marker) {
         marker.setAttribute('stroke-width', 0);
         document.getElementById('hover-display').style.display = 'none';
       }
-      console.warn('Hover out of bounds');
       return;
     }
 
     const percentage =
       ((svgX - BIND_WIDTH) / (svgWidth - 2 * BIND_WIDTH)) * 100;
-    hoverSelectedPosition = calculateBiblePosition(percentage);
+    position = calculateBiblePosition(percentage);
 
-    if (marker) {
-      marker.setAttribute('x1', svgX);
-      marker.setAttribute('x2', svgX);
-      marker.setAttribute('stroke-width', POS_WIDTH);
-      document.getElementById('hover-display').style.display = 'block';
-    }
-
-    document.getElementById(
-      'hover-display'
-    ).textContent = `${hoverSelectedPosition.book} ${hoverSelectedPosition.chapter}:${hoverSelectedPosition.verse}`;
-  });
-
-  svg.addEventListener('click', (e) => {
-    console.log('SVG clicked');
-
-    if (!selectEnabled) {
-      console.warn('Select is not enabled');
-      return;
-    }
-
-    const rect = svg.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const svgWidth = svg.width.baseVal.value;
-    const scaleX = svgWidth / rect.width;
-    const svgX = x * scaleX;
-
-    if (svgX < BIND_WIDTH || svgX > svgWidth - BIND_WIDTH) {
-      console.warn('Click out of bounds');
-      return;
-    }
-
-    const percentage =
-      ((svgX - BIND_WIDTH) / (svgWidth - 2 * BIND_WIDTH)) * 100;
-    selectedPosition = calculateBiblePosition(percentage);
-
-    const marker = svg.querySelector('#position-marker');
     if (marker) {
       marker.setAttribute('x1', svgX);
       marker.setAttribute('x2', svgX);
@@ -157,12 +140,16 @@ function initializeEventListeners() {
 
     document.getElementById(
       'reference-display'
-    ).textContent = `${selectedPosition.book} ${selectedPosition.chapter}:${selectedPosition.verse}`;
+    ).textContent = `${position.book} ${position.chapter}:${position.verse}`;
+
+    if (markSelected) {
+      selectedPosition = position;
+    }
 
     openBible();
     document.getElementById('submit-guess').style.display = 'block';
-  });
 }
+
 
 const TOTAL_VERSES = BOOKS.reduce((bookAcc, currentBook) => {
   const currentBookData = BIBLE_DATA[currentBook];
