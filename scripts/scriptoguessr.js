@@ -146,6 +146,8 @@ function setPositionSelector(svg, e, markSelected=false) {
     document.getElementById(displayId).style.display = 'block';
 
     if (markSelected) {
+      idx = getVerseAtDistance(position, 0);
+      hideButtons(idx);
       selectedPosition = position;
     }
 
@@ -245,6 +247,21 @@ function showButtons() {
   });
 }
 
+function hideButtons(idx) {
+  if (idx < 10) {
+    document.getElementById('back-10').style.display = 'none';
+  }
+  if (idx == 0) {
+    document.getElementById('back-1').style.display = 'none';
+  }
+  if (idx > allVerses.length - 10) {
+    document.getElementById('fwd-10').style.display = 'none';
+  }
+  if (idx == allVerses.length - 1) {
+    document.getElementById('fwd-1').style.display = 'none';
+  }
+}
+
 function selectAtDistance(distance) {
   if (selectedPosition === null) {
     // TODO: UI error
@@ -266,18 +283,7 @@ function selectAtDistance(distance) {
     }
   }
 
-  if (idx < 10) {
-    document.getElementById('back-10').style.display = 'none';
-  }
-  if (idx == 0) {
-    document.getElementById('back-1').style.display = 'none';
-  }
-  if (idx > allVerses.length - 10) {
-    document.getElementById('fwd-10').style.display = 'none';
-  }
-  if (idx == allVerses.length - 1) {
-    document.getElementById('fwd-1').style.display = 'none';
-  }
+  hideButtons(idx);
 
   selectedPosition = position;
   document.querySelector(`#reference-display .reference-text`).textContent = `${position.book} ${position.chapter}:${position.verse}`;
