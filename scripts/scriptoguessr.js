@@ -53,7 +53,7 @@ async function displayVerse(book, chapter, verse, text) {
 function loadSVG() {
   console.log('Attempting to load SVG...');
   $.ajax({
-    url: '../images/book.svg',
+    url: 'images/book.svg',
     dataType: 'text',
     success: function (svgText) {
       console.log('SVG loaded successfully');
