@@ -184,6 +184,60 @@ BOOKS.forEach((book) => {
   });
 });
 
+
+let allVerses = [];
+
+/**
+ * Initializes a flat array of all verses in the Bible based on BIBLE_DATA.
+ * Each verse is represented as an object: { book, chapter, verse }.
+ */
+function initializeAllVerses() {
+  for (const bookName in BIBLE_DATA) {
+    const book = BIBLE_DATA[bookName];
+    for (let ch = 1; ch <= book.chapters; ch++) {
+      for (let v = 1; v <= book.versesPerChapter[ch - 1]; v++) {
+        allVerses.push({ book: bookName, chapter: ch, verse: v });
+      }
+    }
+  }
+}
+
+/**
+ * Returns the verse at a specified distance from the startVerse.
+ * @param {Object} startVerse - An object with properties {book, chapter, verse}.
+ * @param {number} distance - Number of verses to move forward (positive) or backward (negative).
+ * @returns {Object|null} - The verse object at the new position or null if out of bounds.
+ */
+function getVerseAtDistance(startVerse, distance) {
+  // Initialize the flattened verse list if not already done.
+  if (allVerses.length === 0) {
+    initializeAllVerses();
+  }
+
+  // Find the index of the starting verse.
+  const startIndex = allVerses.findIndex(v =>
+    v.book === startVerse.book &&
+    v.chapter === startVerse.chapter &&
+    v.verse === startVerse.verse
+  );
+
+  if (startIndex === -1) {
+    console.error("Start verse not found in Bible data.");
+    return null;
+  }
+
+  // Calculate the new index.
+  const newIndex = startIndex + distance;
+
+  // Check boundaries.
+  if (newIndex < 0 || newIndex >= allVerses.length) {
+    console.warn("Requested verse distance is out of bounds.");
+    return null;
+  }
+
+  return allVerses[newIndex];
+}
+
 /**
  * Optimized function to calculate total percentage using precomputed caches.
  * @param {Object} reference - An object with properties: book, chapter, verse.
